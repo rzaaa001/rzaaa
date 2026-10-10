@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RZAASTR — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #080c0f;
+      --bg2: #0d1117;
+      --surface: #0f1923;
+      --border: #1a2535;
+      --border2: #243040;
+      --accent: #00e5ff;
+      --accent2: #00bcd4;
+      --accent-dim: rgba(0,229,255,0.08);
+      --accent-glow: rgba(0,229,255,0.18);
+      --rat: #1a2535;
+      --rat2: #162030;
+      --text: #e0eaf5;
+      --text2: #7a9ab8;
+      --text3: #3d5a78;
+      --danger: #ff3d5a;
+      --success: #00e676;
+      --warn: #ffb300;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* RAT pattern background */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .bg-rat {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(0,229,255,0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 80% 20%, rgba(0,188,212,0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 60% 80%, rgba(0,229,255,0.03) 0%, transparent 70%);
+    }
+
+    /* Circuit lines */
+    .circuit {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+    }
+    .circuit svg { width: 100%; height: 100%; opacity: 0.07; }
+
+    /* Scanline overlay */
+    .scanline {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+    }
+
+    .login-wrap {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 420px;
+      padding: 16px;
+    }
+
+    .logo-area {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px; height: 56px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .logo-icon svg { width: 28px; height: 28px; color: var(--accent); }
+
+    .logo-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(0,229,255,0.4);
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 1px var(--accent-glow) inset;
+    }
+
+    .card-title {
+      font-size: 13px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--text2);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--rat2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(0,229,255,0.12);
+    }
+
+    .field input::placeholder { color: var(--text3); }
+
+    .btn-login {
+      width: 100%;
+      margin-top: 8px;
+      padding: 13px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 20px rgba(0,229,255,0.2);
+    }
+
+    .btn-login:hover { opacity: 0.85; box-shadow: 0 0 30px rgba(0,229,255,0.35); }
+    .btn-login:active { opacity: 0.7; }
+    .btn-login:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .alert {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      border: 1px solid;
+    }
+
+    .alert.error { background: rgba(255,61,90,0.1); border-color: var(--danger); color: var(--danger); }
+    .alert.success { background: rgba(0,230,118,0.1); border-color: var(--success); color: var(--success); }
+
+    .footer-tag {
+      text-align: center;
+      margin-top: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+    }
+
+    /* Pulse dot */
+    .pulse-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,230,118,0.4); }
+      50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(0,230,118,0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-rat"></div>
+  <div class="circuit">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 200 H400 V100 H800 V300 H1200 V150 H1440" stroke="#00e5ff" stroke-width="1" fill="none"/>
+      <path d="M0 500 H300 V600 H700 V450 H1100 V600 H1440" stroke="#00e5ff" stroke-width="1" fill="none"/>
+      <path d="M200 0 V300 H400 V600 H600 V900" stroke="#00bcd4" stroke-width="1" fill="none"/>
+      <path d="M900 0 V200 H1100 V500 H900 V900" stroke="#00bcd4" stroke-width="1" fill="none"/>
+      <circle cx="400" cy="100" r="3" fill="#00e5ff"/>
+      <circle cx="800" cy="300" r="3" fill="#00e5ff"/>
+      <circle cx="700" cy="450" r="3" fill="#00e5ff"/>
+      <circle cx="1100" cy="200" r="3" fill="#00bcd4"/>
+      <circle cx="600" cy="600" r="3" fill="#00bcd4"/>
+    </svg>
+  </div>
+  <div class="scanline"></div>
+
+  <div class="login-wrap">
+    <div class="logo-area">
+      <div class="logo-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+        </svg>
+      </div>
+      <div class="logo-title">RZAASTR</div>
+      <div class="logo-sub"><span class="pulse-dot"></span> WA Bot Panel — Indonesia</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Masuk Panel</div>
+
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="masukkan username" autocomplete="off"/>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••"/>
+      </div>
+
+      <button class="btn-login" id="btnLogin" onclick="doLogin()">MASUK</button>
+
+      <div class="alert" id="alertMsg"></div>
+    </div>
+
+    <div class="footer-tag">RZAASTR v1.0 // SECURE CHANNEL</div>
+  </div>
+
+  <script>
+    // Tekan Enter untuk login
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    async function doLogin() {
+      const btn = document.getElementById('btnLogin');
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const alert = document.getElementById('alertMsg');
+
+      if (!username || !password) {
+        showAlert('Username dan password wajib diisi', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'MEMVERIFIKASI...';
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showAlert('Login berhasil, mengalihkan...', 'success');
+          setTimeout(() => window.location.href = '/dashboard', 800);
+        } else {
+          showAlert(data.message || 'Login gagal', 'error');
+          btn.disabled = false;
+          btn.textContent = 'MASUK';
+        }
+      } catch {
+        showAlert('Koneksi gagal ke server', 'error');
+        btn.disabled = false;
+        btn.textContent = 'MASUK';
+      }
+    }
+
+    function showAlert(msg, type) {
+      const el = document.getElementById('alertMsg');
+      el.textContent = msg;
+      el.className = `alert ${type}`;
+      el.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

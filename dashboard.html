@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RZAASTR — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #080c0f;
+      --bg2: #0d1117;
+      --surface: #0f1923;
+      --surface2: #111d2b;
+      --border: #1a2535;
+      --border2: #243040;
+      --accent: #00e5ff;
+      --accent2: #00bcd4;
+      --accent-dim: rgba(0,229,255,0.08);
+      --accent-glow: rgba(0,229,255,0.15);
+      --text: #e0eaf5;
+      --text2: #7a9ab8;
+      --text3: #3d5a78;
+      --danger: #ff3d5a;
+      --success: #00e676;
+      --warn: #ffb300;
+      --sidebar: 240px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── BG ── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0;
+      width: var(--sidebar);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon-sm {
+      width: 36px; height: 36px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,229,255,0.3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-icon-sm svg { width: 18px; height: 18px; color: var(--accent); }
+
+    .logo-text-sm {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--accent);
+    }
+
+    .logo-ver {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      margin-bottom: 20px;
+    }
+
+    .nav-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0 8px 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: var(--accent-dim);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(0,229,255,0.15);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 3px; height: 18px;
+      background: var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .sidebar-user {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 34px; height: 34px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,229,255,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 10px; color: var(--text3); letter-spacing: 1px; }
+
+    .btn-logout {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text3);
+      padding: 4px;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .btn-logout:hover { color: var(--danger); }
+    .btn-logout svg { width: 16px; height: 16px; display: block; }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar);
+      flex: 1;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      background: rgba(8,12,15,0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(0,230,118,0.08);
+      border: 1px solid rgba(0,230,118,0.2);
+      border-radius: 100px;
+      font-size: 11px;
+      color: var(--success);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .dot.pulse { animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .content { padding: 28px; }
+
+    /* ── VIEWS ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.cyan::before { background: var(--accent); }
+    .stat-card.green::before { background: var(--success); }
+    .stat-card.red::before { background: var(--danger); }
+    .stat-card.warn::before { background: var(--warn); }
+
+    .stat-label { font-size: 11px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 600; color: var(--text); }
+    .stat-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+    .stat-icon {
+      position: absolute;
+      top: 18px; right: 18px;
+      opacity: 0.1;
+    }
+    .stat-icon svg { width: 32px; height: 32px; }
+
+    /* ── SECTION HEADER ── */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg { width: 16px; height: 16px; color: var(--accent); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn svg { width: 14px; height: 14px; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { opacity: 0.85; box-shadow: 0 0 16px rgba(0,229,255,0.25); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text2);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover { background: var(--accent-dim); color: var(--text); border-color: rgba(0,229,255,0.2); }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border-color: rgba(255,61,90,0.3);
+    }
+    .btn-danger:hover { background: rgba(255,61,90,0.1); }
+
+    .btn-success {
+      background: transparent;
+      color: var(--success);
+      border-color: rgba(0,230,118,0.3);
+    }
+    .btn-success:hover { background: rgba(0,230,118,0.08); }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead tr {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(0,229,255,0.02); }
+
+    td {
+      padding: 13px 16px;
+      font-size: 13px;
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge.online { background: rgba(0,230,118,0.1); color: var(--success); border: 1px solid rgba(0,230,118,0.2); }
+    .badge.offline { background: rgba(255,61,90,0.08); color: var(--danger); border: 1px solid rgba(255,61,90,0.15); }
+    .badge.admin { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.2); }
+    .badge.user { background: rgba(122,154,184,0.1); color: var(--text2); border: 1px solid var(--border); }
+
+    .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text2); }
+
+    .action-row { display: flex; gap: 6px; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 28px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 0 60px rgba(0,0,0,0.5);
+      transform: translateY(10px);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-title svg { width: 18px; height: 18px; color: var(--accent); }
+
+    .form-field { margin-bottom: 14px; }
+    .form-field label { display: block; font-size: 11px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+    .form-field input, .form-field select {
+      width: 100%;
+      background: var(--rat2, #0d1117);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-field input:focus, .form-field select:focus { border-color: var(--accent); }
+    .form-field select option { background: #0f1923; }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+    }
+
+    .toggle-label { font-size: 13px; color: var(--text2); }
+
+    .toggle {
+      width: 40px; height: 22px;
+      background: var(--border2);
+      border-radius: 100px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle.on { background: var(--accent); }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: left 0.2s;
+    }
+
+    .toggle.on::after { left: 21px; }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    /* ── LOGS ── */
+    .log-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-badge { flex-shrink: 0; }
+    .log-action { font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: var(--accent); letter-spacing: 1px; }
+    .log-detail { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .log-time { font-size: 10px; color: var(--text3); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+    /* ── EMPTY ── */
+    .empty {
+      text-align: center;
+      padding: 48px;
+      color: var(--text3);
+    }
+    .empty svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.3; }
+    .empty p { font-size: 13px; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast-item {
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid;
+      animation: slideIn 0.2s ease;
+      min-width: 240px;
+    }
+
+    .toast-item.success { background: rgba(0,230,118,0.1); border-color: rgba(0,230,118,0.3); color: var(--success); }
+    .toast-item.error { background: rgba(255,61,90,0.1); border-color: rgba(255,61,90,0.3); color: var(--danger); }
+    .toast-item.info { background: var(--accent-dim); border-color: rgba(0,229,255,0.2); color: var(--accent); }
+
+    @keyframes slideIn {
+      from { transform: translateX(20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* ── responsive ── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-row">
+        <div class="logo-icon-sm">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text-sm">RZAASTR</div>
+          <div class="logo-ver">WA Panel v1.0</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-label">Main</div>
+        <div class="nav-item active" onclick="switchView('overview')">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Overview
+        </div>
+        <div class="nav-item" onclick="switchView('bots')">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Manajemen Bot
+        </div>
+      </div>
+
+      <div class="nav-section" id="adminMenu" style="display:none">
+        <div class="nav-label">Admin</div>
+        <div class="nav-item" onclick="switchView('users')">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          User Manager
+        </div>
+        <div class="nav-item" onclick="switchView('logs')">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Activity Logs
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-role" id="userRole">—</div>
+        </div>
+        <button class="btn-logout" onclick="doLogout()" title="Logout">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Overview</div>
+      <div class="topbar-right">
+        <div class="status-chip">
+          <div class="dot pulse"></div>
+          ONLINE
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── OVERVIEW ── -->
+      <div class="view active" id="view-overview">
+        <div class="stats-grid">
+          <div class="stat-card cyan">
+            <div class="stat-label">Total Bot</div>
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-sub">Bot terdaftar</div>
+            <div class="stat-icon"><svg fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Bot Online</div>
+            <div class="stat-value" id="stat-online">0</div>
+            <div class="stat-sub">Aktif saat ini</div>
+            <div class="stat-icon"><svg fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">Bot Offline</div>
+            <div class="stat-value" id="stat-offline">0</div>
+            <div class="stat-sub">Tidak aktif</div>
+            <div class="stat-icon"><svg fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></div>
+          </div>
+          <div class="stat-card warn">
+            <div class="stat-label">Total Pesan</div>
+            <div class="stat-value" id="stat-msg">0</div>
+            <div class="stat-sub">Pesan diproses</div>
+            <div class="stat-icon"><svg fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <div class="section-title">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Log Terbaru
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div style="padding: 16px 20px;" id="logPreview">
+            <div class="empty"><p>Belum ada aktivitas</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BOTS ── -->
+      <div class="view" id="view-bots">
+        <div class="section-head">
+          <div class="section-title">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            Manajemen Bot
+          </div>
+          <button class="btn btn-primary" onclick="openAddBot()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Tambah Bot
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Nomor</th>
+                <th>Prefix</th>
+                <th>Status</th>
+                <th>Auto Reply</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="botTable">
+              <tr><td colspan="6"><div class="empty"><p>Belum ada bot</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── USERS ── -->
+      <div class="view" id="view-users">
+        <div class="section-head">
+          <div class="section-title">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            User Manager
+          </div>
+          <button class="btn btn-primary" onclick="openAddUser()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Tambah User
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Username</th><th>Role</th><th>Dibuat</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="userTable">
+              <tr><td colspan="4"><div class="empty"><p>Memuat...</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── LOGS ── -->
+      <div class="view" id="view-logs">
+        <div class="section-head">
+          <div class="section-title">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Activity Logs
+          </div>
+          <button class="btn btn-ghost" onclick="loadLogs()">Refresh</button>
+        </div>
+
+        <div class="table-wrap" style="padding: 4px 16px;" id="logsPanel">
+          <div class="empty"><p>Memuat log...</p></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── MODAL ADD BOT ── -->
+  <div class="modal-overlay" id="modalBot">
+    <div class="modal">
+      <div class="modal-title">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <span id="modalBotTitle">Tambah Bot</span>
+      </div>
+      <div class="form-field">
+        <label>Nama Bot</label>
+        <input type="text" id="botName" placeholder="NamaBot"/>
+      </div>
+      <div class="form-field">
+        <label>Nomor WA (format: 628xxx)</label>
+        <input type="text" id="botNumber" placeholder="628xxxxxxxxxx"/>
+      </div>
+      <div class="form-field">
+        <label>Token / API Key (opsional)</label>
+        <input type="text" id="botToken" placeholder="token..."/>
+      </div>
+      <div class="form-field">
+        <label>Prefix Command</label>
+        <input type="text" id="botPrefix" placeholder="!" maxlength="3"/>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Auto Reply</span>
+        <div class="toggle" id="toggleAutoReply" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modalBot')">Batal</button>
+        <button class="btn btn-primary" onclick="saveBot()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL ADD USER ── -->
+  <div class="modal-overlay" id="modalUser">
+    <div class="modal">
+      <div class="modal-title">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Tambah User
+      </div>
+      <div class="form-field">
+        <label>Username</label>
+        <input type="text" id="newUsername" placeholder="username"/>
+      </div>
+      <div class="form-field">
+        <label>Password</label>
+        <input type="password" id="newPassword" placeholder="password"/>
+      </div>
+      <div class="form-field">
+        <label>Role</label>
+        <select id="newRole">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modalUser')">Batal</button>
+        <button class="btn btn-primary" onclick="saveUser()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    let currentView = 'overview';
+    let editBotId = null;
+    let currentRole = '';
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    async function init() {
+      try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        if (!data.success) return location.href = '/';
+        currentRole = data.role;
+        document.getElementById('userName').textContent = data.username;
+        document.getElementById('userRole').textContent = data.role.toUpperCase();
+        document.getElementById('userAvatar').textContent = data.username[0].toUpperCase();
+        if (data.role === 'admin') document.getElementById('adminMenu').style.display = 'block';
+        loadStats();
+        loadLogPreview();
+      } catch { location.href = '/'; }
+    }
+
+    // ── View Switch ───────────────────────────────────────────────────────────
+    function switchView(name) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('view-' + name).classList.add('active');
+      event.currentTarget.classList.add('active');
+      currentView = name;
+
+      const titles = { overview: 'Overview', bots: 'Manajemen Bot', users: 'User Manager', logs: 'Activity Logs' };
+      document.getElementById('topbarTitle').textContent = titles[name] || name;
+
+      if (name === 'bots') loadBots();
+      if (name === 'users') loadUsers();
+      if (name === 'logs') loadLogs();
+    }
+
+    // ── Stats ─────────────────────────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/bots/stats');
+        const d = await res.json();
+        if (!d.success) return;
+        document.getElementById('stat-total').textContent = d.total;
+        document.getElementById('stat-online').textContent = d.online;
+        document.getElementById('stat-offline').textContent = d.offline;
+        document.getElementById('stat-msg').textContent = d.totalMessages;
+      } catch {}
+    }
+
+    // ── Log Preview ───────────────────────────────────────────────────────────
+    async function loadLogPreview() {
+      try {
+        const res = await fetch('/api/logs');
+        const d = await res.json();
+        const el = document.getElementById('logPreview');
+        if (!d.logs.length) { el.innerHTML = '<div class="empty"><p>Belum ada aktivitas</p></div>'; return; }
+        el.innerHTML = d.logs.slice(0, 5).map(l => renderLog(l)).join('');
+      } catch {}
+    }
+
+    // ── Bots ──────────────────────────────────────────────────────────────────
+    async function loadBots() {
+      try {
+        const res = await fetch('/api/bots');
+        const d = await res.json();
+        const tbody = document.getElementById('botTable');
+        if (!d.bots.length) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><p>Belum ada bot. Klik Tambah Bot.</p></div></td></tr>';
+          return;
+        }
+        tbody.innerHTML = d.bots.map(b => `
+          <tr>
+            <td><strong>${esc(b.name)}</strong></td>
+            <td><span class="mono">${esc(b.number)}</span></td>
+            <td><span class="mono">${esc(b.prefix)}</span></td>
+            <td><span class="badge ${b.status}"><div class="dot ${b.status === 'online' ? 'pulse' : ''}"></div>${b.status}</span></td>
+            <td><span class="badge ${b.autoReply ? 'online' : 'offline'}">${b.autoReply ? 'ON' : 'OFF'}</span></td>
+            <td>
+              <div class="action-row">
+                ${b.status === 'offline'
+                  ? `<button class="btn btn-success" onclick="toggleBotStatus('${b.id}','online')">Start</button>`
+                  : `<button class="btn btn-danger" onclick="toggleBotStatus('${b.id}','offline')">Stop</button>`}
+                <button class="btn btn-ghost" onclick="openEditBot(${JSON.stringify(b).replace(/"/g, '&quot;')})">Edit</button>
+                <button class="btn btn-danger" onclick="deleteBot('${b.id}')">Hapus</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+        loadStats();
+      } catch {}
+    }
+
+    function openAddBot() {
+      editBotId = null;
+      document.getElementById('modalBotTitle').textContent = 'Tambah Bot';
+      document.getElementById('botName').value = '';
+      document.getElementById('botNumber').value = '';
+      document.getElementById('botToken').value = '';
+      document.getElementById('botPrefix').value = '!';
+      document.getElementById('toggleAutoReply').classList.remove('on');
+      openModal('modalBot');
+    }
+
+    function openEditBot(b) {
+      editBotId = b.id;
+      document.getElementById('modalBotTitle').textContent = 'Edit Bot';
+      document.getElementById('botName').value = b.name;
+      document.getElementById('botNumber').value = b.number;
+      document.getElementById('botToken').value = b.token || '';
+      document.getElementById('botPrefix').value = b.prefix || '!';
+      if (b.autoReply) document.getElementById('toggleAutoReply').classList.add('on');
+      else document.getElementById('toggleAutoReply').classList.remove('on');
+      openModal('modalBot');
+    }
+
+    async function saveBot() {
+      const body = {
+        name: document.getElementById('botName').value.trim(),
+        number: document.getElementById('botNumber').value.trim(),
+        token: document.getElementById('botToken').value.trim(),
+        prefix: document.getElementById('botPrefix').value.trim() || '!',
+        autoReply: document.getElementById('toggleAutoReply').classList.contains('on')
+      };
+
+      if (!body.name || !body.number) { toast('Nama dan nomor wajib diisi', 'error'); return; }
+
+      const url = editBotId ? `/api/bots/${editBotId}` : '/api/bots';
+      const method = editBotId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await res.json();
+
+      if (d.success) {
+        closeModal('modalBot');
+        toast(editBotId ? 'Bot berhasil diperbarui' : 'Bot berhasil ditambahkan', 'success');
+        loadBots();
+      } else {
+        toast(d.message || 'Gagal', 'error');
+      }
+    }
+
+    async function toggleBotStatus(id, status) {
+      const res = await fetch(`/api/bots/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      const d = await res.json();
+      if (d.success) { toast(`Bot ${status === 'online' ? 'dinyalakan' : 'dimatikan'}`, 'success'); loadBots(); }
+    }
+
+    async function deleteBot(id) {
+      if (!confirm('Hapus bot ini?')) return;
+      const res = await fetch(`/api/bots/${id}`, { method: 'DELETE' });
+      const d = await res.json();
+      if (d.success) { toast('Bot dihapus', 'info'); loadBots(); }
+    }
+
+    // ── Users ─────────────────────────────────────────────────────────────────
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const d = await res.json();
+        const tbody = document.getElementById('userTable');
+        if (!d.users) { tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><p>Akses ditolak</p></div></td></tr>'; return; }
+        tbody.innerHTML = d.users.map(u => `
+          <tr>
+            <td><strong>${esc(u.username)}</strong></td>
+            <td><span class="badge ${u.role}">${u.role}</span></td>
+            <td><span class="mono">${new Date(u.createdAt).toLocaleDateString('id-ID')}</span></td>
+            <td>
+              ${u.username !== 'admin' ? `<button class="btn btn-danger" onclick="deleteUser('${u.id}')">Hapus</button>` : '<span class="mono" style="color:var(--text3)">Protected</span>'}
+            </td>
+          </tr>
+        `).join('');
+      } catch {}
+    }
+
+    function openAddUser() { openModal('modalUser'); }
+
+    async function saveUser() {
+      const username = document.getElementById('newUsername').value.trim();
+      const password = document.getElementById('newPassword').value;
+      const role = document.getElementById('newRole').value;
+      if (!username || !password) { toast('Username dan password wajib', 'error'); return; }
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role })
+      });
+      const d = await res.json();
+      if (d.success) { closeModal('modalUser'); toast('User ditambahkan', 'success'); loadUsers(); }
+      else toast(d.message || 'Gagal', 'error');
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Hapus user ini?')) return;
+      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      const d = await res.json();
+      if (d.success) { toast('User dihapus', 'info'); loadUsers(); }
+      else toast(d.message, 'error');
+    }
+
+    // ── Logs ──────────────────────────────────────────────────────────────────
+    async function loadLogs() {
+      try {
+        const res = await fetch('/api/logs');
+        const d = await res.json();
+        const el = document.getElementById('logsPanel');
+        if (!d.logs.length) { el.innerHTML = '<div class="empty"><p>Belum ada log</p></div>'; return; }
+        el.innerHTML = d.logs.map(l => renderLog(l)).join('');
+      } catch {}
+    }
+
+    function renderLog(l) {
+      return `
+        <div class="log-item">
+          <div>
+            <div class="log-action">${esc(l.action)}</div>
+            <div class="log-detail">${esc(l.detail)} — <span style="color:var(--accent2)">${esc(l.user)}</span></div>
+            <div class="log-time">${new Date(l.timestamp).toLocaleString('id-ID')}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ── Logout ────────────────────────────────────────────────────────────────
+    async function doLogout() {
+      await fetch('/api/logout', { method: 'POST' });
+      location.href = '/';
+    }
+
+    // ── Modal ─────────────────────────────────────────────────────────────────
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+    });
+
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    function toast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast-item ${type}`;
+      el.textContent = msg;
+      document.getElementById('toast').appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    // ── Utils ─────────────────────────────────────────────────────────────────
+    function esc(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Start ─────────────────────────────────────────────────────────────────
+    init();
+    setInterval(() => { loadStats(); if (currentView === 'bots') loadBots(); }, 30000);
+  </script>
+</body>
+</html>
